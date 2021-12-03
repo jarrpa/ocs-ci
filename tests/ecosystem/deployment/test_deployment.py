@@ -1,7 +1,7 @@
 import logging
 
 from ocs_ci.framework import config
-from ocs_ci.framework.testlib import deployment, polarion_id
+from ocs_ci.framework.testlib import deployment, polarion_id, upstream_ci
 from ocs_ci.ocs.resources.storage_cluster import (
     ocs_install_verification,
     mcg_only_install_verification,
@@ -14,6 +14,7 @@ from ocs_ci.helpers.sanity_helpers import Sanity, SanityExternalCluster
 log = logging.getLogger(__name__)
 
 
+@upstream_ci
 @deployment
 @polarion_id(get_polarion_id())
 def test_deployment(pvc_factory, pod_factory):

@@ -44,6 +44,7 @@ tier_after_upgrade = pytest.mark.tier_after_upgrade(value=5)
 
 # build acceptance
 acceptance = pytest.mark.acceptance
+upstream_ci = pytest.mark.upstream_ci
 
 # team marks
 
