@@ -15,9 +15,6 @@ RUN dnf -y install \
     openssl-devel
 #    && dnf clean all
 
-# HAX: Remove
-RUN dnf -y install which tree
-
 WORKDIR /ocs-ci
 
 # Copy Python requirements
@@ -32,7 +29,11 @@ RUN python3.7 -m venv $VIRTUAL_ENV && \
     pip install -r requirements-docs.txt
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# HAX: Remove
+RUN dnf -y install which tree
+
 # Copy current project contents
+# NOTE: A .dockerignore file make this much faster
 COPY . .
 
 # HAX: Hold this for now...
@@ -44,11 +45,5 @@ COPY . .
 #COPY ocs_ci/ ocs_ci/
 #COPY tests/ tests/
 #COPY .functional_ci_setup.py .editorconfig Jenkinsfile LICENSE MANIFEST.in Makefile README.md pytest.ini pytest_unittests.ini tox.ini ./
-
-# Python linting
-#RUN make lint
-
-# Run unit tests
-RUN make unit-tests
 
 ENTRYPOINT [ "run-ci" ]

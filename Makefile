@@ -8,7 +8,7 @@ SHELL = /usr/bin/env bash -o pipefail
 
 .DEFAULT_GOAL := help
 
-all: docker-build
+all: build
 
 ##@ General
 
@@ -28,18 +28,39 @@ help: ## Display this help.
 
 ##@ Development
 
-IMG = quay.io/jarrpa/ocs-ci:jarrpa-dev
+IMG ?= quay.io/jarrpa/ocs-ci:jarrpa-dev
 
-tox: ## Run local tests against the repo
+build: docker-build tox ## Build and test the ocs-ci container image
+
+tox: ## Run local tests against the ocs-ci container image
 	docker run --entrypoint tox ${IMG}
 
-docker-build: ## Build docker image
+docker-build: ## Build ocs-ci container image
 	docker build -t ${IMG} .
 
-docker-push: ## Push docker image
+docker-push: ## Push ocs-ci container image
 	docker push ${IMG}
 
 ##@ Run
 
-run: ## Run?
-	docker run ${IMG}
+TESTS ?= deployment
+DATA_DIR ?= ./data
+
+AWS_DIR ?= ~/.aws
+CLUSTER_NAME ?= jarrpa-dev
+CLUSTER_PATH ?= /clusters/$(CLUSTER_NAME)
+LOCAL_CLUSTER_PATH ?= ~/ocp/${CLUSTER_NAME}/aws-dev
+
+run: ## Run an ocs-ci container instance
+	docker run -v ${DATA_DIR}:/ocs-ci/data:ro \
+		-v ${AWS_DIR}:/root/.aws:ro \
+		-v ${LOCAL_CLUSTER_PATH}:${CLUSTER_PATH} \
+		${IMG} \
+		-m "$(TESTS)" --cluster-path=${CLUSTER_PATH} --cluster-name=${CLUSTER_NAME}
+
+shell: ## Run a shell in an ocs-ci container instance
+	docker run -v ${DATA_DIR}:/ocs-ci/data:ro \
+		-v ${AWS_DIR}:/root/.aws:ro \
+		-v ${LOCAL_CLUSTER_PATH}:${CLUSTER_PATH} \
+		-it --entrypoint /bin/bash \
+		${IMG}

@@ -462,6 +462,7 @@ def process_cluster_cli_params(config):
     """
     suffix = ocsci_config.cur_index + 1 if ocsci_config.multicluster else ""
     cluster_path = get_cli_param(config, f"cluster_path{suffix}")
+    # TODO: os.getenv()
     if not cluster_path:
         raise ClusterPathNotProvidedError()
     cluster_path = os.path.expanduser(cluster_path)

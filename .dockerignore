@@ -10,6 +10,7 @@ ven*
 *.bak
 openshift-install*
 dist
+data
 .pytest_cache/
 Docker*
 .git*
