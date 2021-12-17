@@ -35,8 +35,11 @@ build: docker-build tox ## Build and test the ocs-ci container image
 tox: ## Run local tests against the ocs-ci container image
 	docker run --entrypoint tox ${IMG}
 
+WORK_DIR = /ocs-ci
+DEVELOPMENT ?=
+
 docker-build: ## Build ocs-ci container image
-	docker build -t ${IMG} .
+	docker build --build-arg workdir=${WORK_DIR} --build-arg DEVELOPMENT=${DEVELOPMENT} -t ${IMG} .
 
 docker-push: ## Push ocs-ci container image
 	docker push ${IMG}
@@ -50,17 +53,27 @@ AWS_DIR ?= ~/.aws
 CLUSTER_NAME ?= jarrpa-dev
 CLUSTER_PATH ?= /clusters/$(CLUSTER_NAME)
 LOCAL_CLUSTER_PATH ?= ~/ocp/${CLUSTER_NAME}/aws-dev
+LOG_DIR ?= ./logs
+#BIN_DIR ?= ./bin
+BIN_DIR ?= /home/jrivera/ocp/jarrpa-dev
 
-run: ## Run an ocs-ci container instance
-	docker run -v ${DATA_DIR}:/ocs-ci/data:ro \
+hax: ## Temporary workarounds for current repo state
+	@./hack/setup-hax.sh
+
+run: hax ## Run an ocs-ci container instance
+	docker run -v ${DATA_DIR}:${WORK_DIR}/data \
 		-v ${AWS_DIR}:/root/.aws:ro \
 		-v ${LOCAL_CLUSTER_PATH}:${CLUSTER_PATH} \
+		-v ${LOG_DIR}:/tmp \
+		-v ${BIN_DIR}:${WORK_DIR}/bin \
 		${IMG} \
 		-m "$(TESTS)" --cluster-path=${CLUSTER_PATH} --cluster-name=${CLUSTER_NAME}
 
 shell: ## Run a shell in an ocs-ci container instance
-	docker run -v ${DATA_DIR}:/ocs-ci/data:ro \
+	docker run -v ${DATA_DIR}:${WORK_DIR}/data \
 		-v ${AWS_DIR}:/root/.aws:ro \
 		-v ${LOCAL_CLUSTER_PATH}:${CLUSTER_PATH} \
+		-v ${LOG_DIR}:/tmp \
+		-v ${BIN_DIR}:${WORK_DIR}/bin \
 		-it --entrypoint /bin/bash \
 		${IMG}

@@ -1,5 +1,8 @@
 FROM fedora:34 as build-tools
 
+ARG DEVELOPMENT=
+ARG DEV_PKGS="which tree"
+
 # rpms required for building and running test suites
 RUN dnf -y install \
     make \
@@ -12,10 +15,15 @@ RUN dnf -y install \
     python3.8 \
     libcurl-devel \
     libxml2-devel \
-    openssl-devel
-#    && dnf clean all
+    openssl-devel && \
+    if [[ ! -z "$DEVELOPMENT" ]]; then \
+      dnf -y install $DEV_PKGS; \
+    else \
+      dnf -y clean all; \
+    fi
 
-WORKDIR /ocs-ci
+ARG workdir=/ocs-ci
+WORKDIR $workdir
 
 # Copy Python requirements
 COPY requirements.txt requirements-dev.txt requirements-docs.txt registry_requirement.txt setup.py ./
@@ -29,21 +37,9 @@ RUN python3.7 -m venv $VIRTUAL_ENV && \
     pip install -r requirements-docs.txt
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# HAX: Remove
-RUN dnf -y install which tree
-
 # Copy current project contents
-# NOTE: A .dockerignore file make this much faster
+# NOTE: A .dockerignore file makes this much faster
 COPY . .
 
-# HAX: Hold this for now...
-#COPY bin/ bin/
-#COPY conf/ conf/
-#COPY docs/ docs/
-#COPY external/ external/
-#COPY hack/ hack/
-#COPY ocs_ci/ ocs_ci/
-#COPY tests/ tests/
-#COPY .functional_ci_setup.py .editorconfig Jenkinsfile LICENSE MANIFEST.in Makefile README.md pytest.ini pytest_unittests.ini tox.ini ./
-
 ENTRYPOINT [ "run-ci" ]
+CMD ["--help"]

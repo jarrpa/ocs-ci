@@ -16,6 +16,7 @@ bin/
 dist
 .coverage
 data/*
+logs/*
 external/
 apidoc/*
 _build/*
