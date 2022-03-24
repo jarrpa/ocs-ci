@@ -1,10 +1,9 @@
 #!/bin/bash
 
-mkdir -p ./logs
-mkdir -p ./data
+DATA_DIR="${DATA_DIR:-data}"
 
-if [ ! -f "data/auth.yaml" ]; then
-  cat > data/auth.yaml << EOF
+if [ ! -f "${DATA_DIR}/auth.yaml" ]; then
+  cat > "${DATA_DIR}/auth.yaml" << EOF
 foo:
 EOF
 fi

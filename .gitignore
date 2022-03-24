@@ -13,10 +13,10 @@ config.yaml
 *.bak
 openshift-install*
 bin/
+clusters/
 dist
 .coverage
 data/*
-logs/*
 external/
 apidoc/*
 _build/*
