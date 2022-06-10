@@ -150,46 +150,6 @@ class Deployment(object):
         self.cluster_path = config.ENV_DATA["cluster_path"]
         self.namespace = config.ENV_DATA["cluster_namespace"]
 
-    class OCPDeployment(BaseOCPDeployment):
-        """
-        This class has to be implemented in child class and should overload
-        methods for platform specific config.
-        """
-
-        pass
-
-    def do_deploy_ocp(self, log_cli_level):
-        """
-        Deploy OCP
-        Args:
-            log_cli_level (str): log level for the installer
-
-        """
-        if not config.ENV_DATA["skip_ocp_deployment"]:
-            if is_cluster_running(self.cluster_path):
-                logger.warning("OCP cluster is already running, skipping installation")
-            else:
-                try:
-                    self.deploy_ocp(log_cli_level)
-                    self.post_ocp_deploy()
-                except Exception as e:
-                    config.RUN["is_ocp_deployment_failed"] = True
-                    logger.error(e)
-                    if config.REPORTING["gather_on_deploy_failure"]:
-                        collect_ocs_logs("deployment", ocs=False)
-                    raise
-
-    def do_deploy_submariner(self):
-        """
-        Deploy Submariner operator
-
-        """
-        # Multicluster operations
-        if config.multicluster:
-            # Configure submariner only on non-ACM clusters
-            submariner = Submariner()
-            submariner.deploy()
-
     def do_deploy_ocs(self):
         """
         Deploy OCS/ODF and run verification as well
@@ -248,38 +208,6 @@ class Deployment(object):
         Args:
             log_cli_level (str): log level for installer (default: DEBUG)
         """
-        self.do_deploy_ocp(log_cli_level)
-        # Deployment of network split scripts via machineconfig API happens
-        # before OCS deployment.
-        if config.DEPLOYMENT.get("network_split_setup"):
-            master_zones = config.ENV_DATA.get("master_availability_zones")
-            worker_zones = config.ENV_DATA.get("worker_availability_zones")
-            # special external zone, which is directly defined by ip addr list,
-            # such zone could represent external services, which we could block
-            # access to via ax-bx-cx network split
-            if config.DEPLOYMENT.get("network_split_zonex_addrs") is not None:
-                x_addr_list = config.DEPLOYMENT["network_split_zonex_addrs"].split(",")
-            else:
-                x_addr_list = None
-            if config.DEPLOYMENT.get("arbiter_deployment"):
-                arbiter_zone = self.get_arbiter_location()
-                logger.debug("detected arbiter zone: %s", arbiter_zone)
-            else:
-                arbiter_zone = None
-            # TODO: use temporary directory for all temporary files of
-            # ocs-deployment, not just here in this particular case
-            tmp_path = Path(tempfile.mkdtemp(prefix="ocs-ci-deployment-"))
-            logger.debug("created temporary directory %s", tmp_path)
-            setup_netsplit(
-                tmp_path, master_zones, worker_zones, x_addr_list, arbiter_zone
-            )
-        ocp_version = version.get_semantic_ocp_version_from_config()
-        if (
-            config.ENV_DATA.get("deploy_acm_hub_cluster")
-            and ocp_version >= version.VERSION_4_9
-        ):
-            self.deploy_acm_hub()
-
         self.do_deploy_submariner()
         self.do_deploy_ocs()
         self.do_deploy_rdr()
@@ -296,38 +224,6 @@ class Deployment(object):
         dr_conf["rbd_dr_scenario"] = config.ENV_DATA.get("rbd_dr_scenario", False)
         dr_conf["dr_metadata_store"] = config.ENV_DATA.get("dr_metadata_store", "awss3")
         return dr_conf
-
-    def deploy_ocp(self, log_cli_level="DEBUG"):
-        """
-        Base deployment steps, the rest should be implemented in the child
-        class.
-
-        Args:
-            log_cli_level (str): log level for installer (default: DEBUG)
-        """
-        self.ocp_deployment = self.OCPDeployment()
-        self.ocp_deployment.deploy_prereq()
-        self.ocp_deployment.deploy(log_cli_level)
-        # logging the cluster UUID so that we can ask for it's telemetry data
-        cluster_id = run_cmd(
-            "oc get clusterversion version -o jsonpath='{.spec.clusterID}'"
-        )
-        logger.info(f"clusterID (UUID): {cluster_id}")
-
-    def post_ocp_deploy(self):
-        """
-        Function does post OCP deployment stuff we need to do.
-        """
-        if config.DEPLOYMENT.get("use_custom_ingress_ssl_cert"):
-            configure_custom_ingress_cert()
-        verify_all_nodes_created()
-        set_selinux_permissions()
-        set_registry_to_managed_state()
-        add_stage_cert()
-        if config.ENV_DATA.get("huge_pages"):
-            enable_huge_pages()
-        if config.DEPLOYMENT.get("dummy_zone_node_labels"):
-            create_dummy_zone_labels()
 
     def label_and_taint_nodes(self):
         """
