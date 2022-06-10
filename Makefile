@@ -33,7 +33,7 @@ IMG ?= quay.io/jarrpa/ocs-ci:jarrpa-dev
 build: docker-build tox ## Build and test the ocs-ci container image
 
 tox: ## Run local tests against the ocs-ci container image
-	docker run --entrypoint tox ${IMG}
+	docker run --entrypoint tox ${TOX_VARS} ${IMG}
 
 WORK_DIR = /ocs-ci
 DEVELOPMENT ?=
@@ -59,14 +59,22 @@ hax: ## Temporary workarounds for current repo state
 	@mkdir -p ${LOCAL_CLUSTER_LOGS_PATH}
 	@./hack/setup-hax.sh
 
+VIRTUAL_ENV ?= ./venv
+venv: ## Set up local virtual environment
+	python3.7 -m venv $(VIRTUAL_ENV) && \
+	  source venv/bin/activate && \
+	  pip install --upgrade pip setuptools && \
+	  pip install -r requirements-dev.txt && \
+	  pip install -r requirements-docs.txt
+
 run: hax ## Run an ocs-ci container instance
-	docker run -v ${DATA_DIR}:${WORK_DIR}/data \
+	docker run -v ${DATA_DIR}:${WORK_DIR}/data:Z \
 		-v ${AWS_DIR}:/root/.aws:ro \
-		-v ${LOCAL_CLUSTER_ASSETS_PATH}:${CLUSTER_PATH} \
-		-v ${LOCAL_CLUSTER_LOGS_PATH}:/tmp \
-		-v ${BIN_DIR}:${WORK_DIR}/bin \
+		-v ${LOCAL_CLUSTER_ASSETS_PATH}:${CLUSTER_PATH}:Z \
+		-v ${LOCAL_CLUSTER_LOGS_PATH}:/tmp:Z \
+		-v ${BIN_DIR}:${WORK_DIR}/bin:Z \
 		${IMG} \
-		-m "$(TESTS)" --cluster-path=${CLUSTER_PATH} --cluster-name=${CLUSTER_NAME}
+		-m "$(TESTS)" --cluster-path=${CLUSTER_PATH} --cluster-name=${CLUSTER_NAME} --ocs-version 4.10 --deploy
 
 shell: hax ## Run a shell in an ocs-ci container instance
 	docker run -v ${DATA_DIR}:${WORK_DIR}/data \
