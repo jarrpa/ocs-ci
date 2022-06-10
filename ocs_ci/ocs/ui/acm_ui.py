@@ -6,7 +6,6 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from ocs_ci.deployment import vmware
 from ocs_ci.ocs import constants
 from ocs_ci.ocs.exceptions import ACMClusterDeployException
 from ocs_ci.ocs.ui.base_ui import BaseUI

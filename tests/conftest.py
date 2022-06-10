@@ -17,7 +17,6 @@ from botocore.exceptions import ClientError
 import pytest
 from collections import namedtuple
 
-from ocs_ci.deployment import factory as dep_factory
 from ocs_ci.framework import config
 from ocs_ci.framework.pytest_customization.marks import (
     deployment,

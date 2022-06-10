@@ -12,7 +12,6 @@ from ocs_ci.deployment.deployment import (
     create_ocs_secret,
     Deployment,
 )
-from ocs_ci.deployment.disconnected import prepare_disconnected_ocs_deployment
 from ocs_ci.deployment.helpers.external_cluster_helpers import ExternalCluster
 from ocs_ci.ocs import constants
 from ocs_ci.ocs.cluster import CephCluster, CephHealthMonitor

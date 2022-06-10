@@ -7,7 +7,6 @@ import json
 import logging
 import tempfile
 
-from ocs_ci.deployment.disconnected import prune_and_mirror_index_image
 from ocs_ci.framework import config
 from ocs_ci.ocs import constants, ocp, defaults
 from ocs_ci.ocs.exceptions import CommandFailed, UnsupportedPlatformError

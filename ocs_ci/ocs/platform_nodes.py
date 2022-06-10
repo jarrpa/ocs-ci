@@ -10,12 +10,6 @@ import boto3
 import yaml
 import ovirtsdk4.types as types
 
-from ocs_ci.deployment.terraform import Terraform
-from ocs_ci.deployment.vmware import (
-    clone_openshift_installer,
-    update_machine_conf,
-    comment_sensitive_var,
-)
 from ocs_ci.ocs.exceptions import (
     TimeoutExpiredError,
     NotAllNodesCreated,

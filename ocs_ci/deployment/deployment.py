@@ -10,20 +10,16 @@ import os
 from subprocess import PIPE, Popen
 import tempfile
 import time
-from pathlib import Path
 import base64
 
 import yaml
 
-from ocs_ci.deployment.ocp import OCPDeployment as BaseOCPDeployment
 from ocs_ci.deployment.helpers.external_cluster_helpers import ExternalCluster
 from ocs_ci.deployment.helpers.mcg_helpers import (
     mcg_only_deployment,
     mcg_only_post_deployment_checks,
 )
-from ocs_ci.deployment.acm import Submariner
 from ocs_ci.deployment.helpers.lso_helpers import setup_local_storage
-from ocs_ci.deployment.disconnected import prepare_disconnected_ocs_deployment
 from ocs_ci.framework import config, merge_dict
 from ocs_ci.ocs import constants, ocp, defaults, registry
 from ocs_ci.ocs.cluster import (
@@ -42,14 +38,11 @@ from ocs_ci.ocs.exceptions import (
     UnsupportedFeatureError,
     RDRDeploymentException,
 )
-from ocs_ci.deployment.zones import create_dummy_zone_labels
-from ocs_ci.deployment.netsplit import setup_netsplit
 from ocs_ci.ocs.monitoring import (
     create_configmap_cluster_monitoring_pod,
     validate_pvc_created_and_bound_on_monitoring_pods,
     validate_pvc_are_mounted_on_monitoring_pods,
 )
-from ocs_ci.ocs.node import verify_all_nodes_created
 from ocs_ci.ocs.resources import packagemanifest
 from ocs_ci.ocs.resources.catalog_source import (
     CatalogSource,
@@ -89,19 +82,14 @@ from ocs_ci.utility import (
 )
 from ocs_ci.utility.retry import retry
 from ocs_ci.utility.secret import link_all_sa_and_secret_and_delete_pods
-from ocs_ci.utility.ssl_certs import configure_custom_ingress_cert
 from ocs_ci.utility.utils import (
     ceph_health_check,
     clone_repo,
-    enable_huge_pages,
     exec_cmd,
     get_latest_ds_olm_tag,
-    is_cluster_running,
     run_cmd,
     run_cmd_multicluster,
-    set_selinux_permissions,
     set_registry_to_managed_state,
-    add_stage_cert,
     modify_csv,
     wait_for_machineconfigpool_status,
     load_auth_config,
