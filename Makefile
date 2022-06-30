@@ -77,10 +77,10 @@ run: hax ## Run an ocs-ci container instance
 		-m "$(TESTS)" --cluster-path=${CLUSTER_PATH} --cluster-name=${CLUSTER_NAME} --ocs-version 4.10 --deploy
 
 shell: hax ## Run a shell in an ocs-ci container instance
-	docker run -v ${DATA_DIR}:${WORK_DIR}/data \
+	docker run -v ${DATA_DIR}:${WORK_DIR}/data:Z \
 		-v ${AWS_DIR}:/root/.aws:ro \
-		-v ${LOCAL_CLUSTER_ASSETS_PATH}:${CLUSTER_PATH} \
-		-v ${LOCAL_CLUSTER_LOGS_PATH}:/tmp \
-		-v ${BIN_DIR}:${WORK_DIR}/bin \
+		-v ${LOCAL_CLUSTER_ASSETS_PATH}:${CLUSTER_PATH}:Z \
+		-v ${LOCAL_CLUSTER_LOGS_PATH}:/tmp:Z \
+		-v ${BIN_DIR}:${WORK_DIR}/bin:Z \
 		-it --entrypoint /bin/bash \
 		${IMG}
