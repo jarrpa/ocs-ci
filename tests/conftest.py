@@ -1405,8 +1405,9 @@ def cluster(
     """
     log.info(f"All logs located at {ocsci_log_path()}")
 
-    teardown = config.RUN["cli_params"]["teardown"]
-    deploy = config.RUN["cli_params"]["deploy"]
+    # teardown = config.RUN["cli_params"]["teardown"]
+    # deploy = config.RUN["cli_params"]["deploy"]
+    teardown = deploy = False
     if teardown or deploy:
         factory = dep_factory.DeploymentFactory()
         deployer = factory.get_deployment()
